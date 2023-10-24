@@ -8,6 +8,10 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+
+	"google.golang.org/protobuf/proto"
+
+	pb "SimpleGoCache/cachepb/simple/go/cache"
 )
 
 const (
@@ -66,8 +70,14 @@ func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	body, err := proto.Marshal(&pb.Response{Value: view.ByteSlice()})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/octet-stream")
-	w.Write(view.ByteSlice())
+	w.Write(body)
 }
 
 // Set updates the pool's list of peers.
