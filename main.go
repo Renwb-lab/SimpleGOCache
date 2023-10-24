@@ -27,14 +27,19 @@ func createGroup() *cache.Group {
 }
 
 func startCacheServer(addr string, addrs []string, gee *cache.Group) {
+	// 创建一个cache服务
 	peers := http2.NewHTTPPool(addr)
+	// 将peers添加进来，方便后面转发
 	peers.Set(addrs...)
+	// 将当前的cache服务注册到api服务中，用户后续的转发
 	gee.RegisterPeers(peers)
 	log.Println("geecache is running at", addr)
+	// 启动cache服务
 	log.Fatal(http.ListenAndServe(addr[7:], peers))
 }
 
 func startAPIServer(apiAddr string, gee *cache.Group) {
+	// 添加api服务的接口
 	http.Handle("/api", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			key := r.URL.Query().Get("key")
@@ -48,6 +53,7 @@ func startAPIServer(apiAddr string, gee *cache.Group) {
 
 		}))
 	log.Println("fontend server is running at", apiAddr)
+	// 启动服务
 	log.Fatal(http.ListenAndServe(apiAddr[7:], nil))
 }
 

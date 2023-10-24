@@ -101,6 +101,7 @@ func (g *Group) Get(key string) (ByteView, error) {
 		return ByteView{}, fmt.Errorf("key is required")
 	}
 
+	// 这个转发有自己的存储有些奇怪
 	if v, ok := g.mainCache.get(key); ok {
 		log.Println("[Cache] hit")
 		return v, nil
@@ -111,6 +112,8 @@ func (g *Group) Get(key string) (ByteView, error) {
 
 func (g *Group) load(key string) (value ByteView, err error) {
 	if g.peers != nil {
+		log.Println("test: ", g.peers)
+		// 这里直接使用的注册到api的cache服务作为转发，而非api服务。
 		if peer, ok := g.peers.PickPeer(key); ok {
 			if value, err = g.getFromPeer(peer, key); err == nil {
 				return value, nil
